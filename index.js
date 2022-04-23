@@ -7,7 +7,7 @@ const port = process.env.PORT || 5000;
 app.use(cors()); //----- Get connected with server side
 app.use(express.json()); //----- Parse the string data from client side
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { query } = require("express");
 const uri =
   "mongodb+srv://mongodb1:RGxnfMquVhOYMmLM@mycluster.rn7n6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
@@ -29,9 +29,24 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/item/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: ObjectId(id)}
+      const result = await itemCollection.findOne(query)
+      res.send(result)
+    })
+
     app.post('/item', async (req, res) => {
       const newItem = req.body
       const result = await itemCollection.insertOne(newItem)
+    })
+
+    app.delete('/item/:id', async (req, res) => {
+      const id = req.params.id
+      const query = {_id: ObjectId(id)}
+      const result = await itemCollection.deleteOne(query)
+      res.send(result)
+
     })
   } finally {
     // await client.close() --- Don't close the client to let activate the server (for now)
