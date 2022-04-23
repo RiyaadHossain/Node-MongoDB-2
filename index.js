@@ -22,31 +22,45 @@ async function run() {
     await client.connect();
     const itemCollection = client.db("myFood").collection("item");
 
-    app.get('/item', async (req, res) => {
-      const query = {}
-      const cursor = itemCollection.find(query)
-      const result = await cursor.toArray()
-      res.send(result)
-    })
+    app.get("/item", async (req, res) => {
+      const query = {};
+      const cursor = itemCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
-    app.get('/item/:id', async (req, res) => {
+    app.get("/item/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: ObjectId(id)}
-      const result = await itemCollection.findOne(query)
+      const query = { _id: ObjectId(id) };
+      const result = await itemCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.post("/item", async (req, res) => {
+      const newItem = req.body;
+      const result = await itemCollection.insertOne(newItem);
+    });
+
+    app.delete("/item/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await itemCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.put('/item/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedFood = req.body
+      const filter = {_id: ObjectId(id)}
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name: updatedFood.name,
+          price: updatedFood.price
+        }
+      }
+      const result = await itemCollection.updateOne(filter, updateDoc, options)
       res.send(result)
-    })
-
-    app.post('/item', async (req, res) => {
-      const newItem = req.body
-      const result = await itemCollection.insertOne(newItem)
-    })
-
-    app.delete('/item/:id', async (req, res) => {
-      const id = req.params.id
-      const query = {_id: ObjectId(id)}
-      const result = await itemCollection.deleteOne(query)
-      res.send(result)
-
     })
   } finally {
     // await client.close() --- Don't close the client to let activate the server (for now)
